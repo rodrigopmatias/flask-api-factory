@@ -52,4 +52,8 @@ This way we will have a `/pets` endpoint capable of responding to all HTTP verbs
 1. Documentation;
 1. `openapi.json` generation mechanism;
 1. A way to provide `Swagger` and/or `Redoc`;
-1. Write unit tests.
+1. Write unit tests;
+    1. Step 60% of coverage;
+    1. Step 80% of coverage;
+    1. Step 90% of coverage;
+    1. Step 100% of coverage;
