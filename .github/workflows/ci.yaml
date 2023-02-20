@@ -1,0 +1,32 @@
+name: "Integration and Delivey"
+
+on:
+  push:
+    branches:
+      - "main"
+      - "develop"
+      - "feat/*"
+      - "hotfix/*"
+    tags:
+      - "v*"
+
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: configure environment
+        run: |
+          pip install -U pip
+          pip install poetry
+          poetry install
+      - name: validate code write
+        run: |
+          poetry run pre-commit run -av
+      - name: validate unit tests
+        run: |
+          poetry run pytest
