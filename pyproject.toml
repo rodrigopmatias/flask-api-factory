@@ -1,7 +1,9 @@
 [tool.poetry]
 name = "flask-api-factory"
-version = "0.1.0"
-description = ""
+version = "0.1.2"
+homepage = "https://github.com/rodrigopmatias/flask-api-factory/blob/main/README.md"
+repository = "https://github.com/rodrigopmatias/flask-api-factory"
+description = "one small flask rest api factory"
 authors = ["Rodrigo Pinheiro Matias <rodrigopmatias@gmail.com>"]
 readme = "README.md"
 packages = [{include = "flask_api_factory"}]

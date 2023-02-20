@@ -36,3 +36,27 @@ jobs:
       - name: validate unit tests
         run: |
           poetry run pytest
+
+  delivery:
+    runs-on: ubuntu-22.04
+    if: github.ref_type == "tag"
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: configure environment
+        run: |
+          pip install -U pip
+          pip install poetry
+      - name: build and delivery
+        run: |
+          PROJECT_VERSION=v$(poetry version -s)
+          if [ "$PROJECT_VERSION" != "${{ github.ref_name }}" ]; then
+            echo "Version of project not match with tag"
+            echo "Tag: ${{ github.ref_name }}"
+            echo "Version: $PROJECT_VERSION"
+            exit 1
+          fi
+          poetry publish -n --build -u __token__ -p ${{ secrets.PYPI_TOKEN }}
