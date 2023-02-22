@@ -6,11 +6,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import Model
 from flask_sqlalchemy.query import Query
 from pydantic import BaseModel
+from pydantic import schema_of as _schema_of
 
 from .actions import ActionBase, ActionManage
 from .auth import allow_any, factory_authorize_config
 from .decorators import is_authorized
 from .filter import FilterBase
+from .openapi.models import APIDoc, APITag
 from .order import Order
 from .page import Page
 
@@ -31,11 +33,19 @@ ENABLE_RESOURCE_ALL = (
 )
 
 
+def schema_of(serializer_class: BaseModel, model_class: Model) -> dict[str, any]:
+    return {
+        **_schema_of(serializer_class)["definitions"][serializer_class.__name__],
+        "title": model_class.__name__,
+    }
+
+
 def factory_api(
     router: Blueprint,
     db: SQLAlchemy,
     Model: Model,
     Serializer: BaseModel | tuple[BaseModel, BaseModel],
+    api_doc: APIDoc | None = None,
     get_query: Callable[[any, dict[str, any]], Query] | None = None,
     context: Callable[[Request], dict[str, any]] = (lambda: {}),
     page_class: Type[Page] = Page,
@@ -60,6 +70,19 @@ def factory_api(
     is_allowed_update = authorizers.get("update", default_authorizer)
     is_allowed_delete = authorizers.get("delete", default_authorizer)
     is_allowed_retrive = authorizers.get("retrive", default_authorizer)
+
+    if api_doc:
+        api_doc.tags.append(
+            APITag(
+                name=Model.__name__,
+                description=getattr(Model, "__description__", "no model description defined"),
+            )
+        )
+
+        schemas = api_doc.components.get("schemas", {})
+        schemas[Model.__name__] = schema_of(InputSerializer, Model)
+
+        api_doc.components.update(schemas=schemas)
 
     @is_authorized(is_allowed_delete)
     def destroy(id: str) -> tuple[dict[str, any] | str, int]:

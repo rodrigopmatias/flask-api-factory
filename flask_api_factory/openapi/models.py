@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 def _translate_field_name(name_map: dict[str, str]):
@@ -24,19 +24,31 @@ class APILicense(BaseModel):
     url: str
 
 
-class APIDescription(BaseModel):
+class APIInfo(BaseModel):
     title: str
-    summary: str
-    termOfService: str
+    description: str
     version: str
     contact: APIContact
     license: APILicense
-    servers: list[APIServer] = []
 
     class Config:
         alias_generator = _translate_field_name({"termOfService": "term_of_service"})
         allow_population_by_field_name = True
 
 
+class APITag(BaseModel):
+    name: str
+    description: str
+
+
+class APIComponent(BaseModel):
+    ...
+
+
 class APIDoc(BaseModel):
-    desciption: APIDescription
+    openapi: str = "3.0.0"
+    servers: list[APIServer] = []
+    info: APIInfo
+    tags: list[APITag] = []
+    components: dict[str, APIComponent] = {}
+    paths: dict[str, str] = {}

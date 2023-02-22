@@ -2,6 +2,7 @@ from flask import Blueprint, Flask
 
 from flask_api_factory import factory_api
 from sample.ext.db import db
+from sample.ext.openapi import api_doc
 
 from ..models import Pet
 from ..serializers import PetSerializer
@@ -18,6 +19,7 @@ factory_api(
     db,
     Pet,
     PetSerializer,
+    api_doc=api_doc,
     ordering=(
         "name",
         "-born_date",
