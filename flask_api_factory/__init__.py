@@ -5,39 +5,25 @@ from flask import Blueprint, Request, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import Model
 from flask_sqlalchemy.query import Query
-from pydantic import BaseModel
-from pydantic import schema_of as _schema_of
+from pydantic import BaseModel, schema_of
 
 from .actions import ActionBase, ActionManage
 from .auth import allow_any, factory_authorize_config
+from .constants import (
+    ENABLE_RESOURCE_ALL,
+    ENABLE_RESOURCE_CREATE,
+    ENABLE_RESOURCE_DESTROY,
+    ENABLE_RESOURCE_LIST,
+    ENABLE_RESOURCE_PARTIAL_UPDATE,
+    ENABLE_RESOURCE_RETRIVE,
+    ENABLE_RESOURCE_UPDATE,
+)
 from .decorators import is_authorized
 from .filter import FilterBase
-from .openapi.models import APIDoc, APITag
+from .openapi import fill_api_doc
+from .openapi.models import APIDoc
 from .order import Order
 from .page import Page
-
-ENABLE_RESOURCE_RETRIVE = 1
-ENABLE_RESOURCE_LIST = 2
-ENABLE_RESOURCE_READ = ENABLE_RESOURCE_RETRIVE | ENABLE_RESOURCE_LIST
-ENABLE_RESOURCE_CREATE = 4
-ENABLE_RESOURCE_UPDATE = 8
-ENABLE_RESOURCE_PARTIAL_UPDATE = 16
-ENABLE_RESOURCE_DESTROY = 32
-ENABLE_RESOURCE_ALL = (
-    ENABLE_RESOURCE_RETRIVE
-    | ENABLE_RESOURCE_LIST
-    | ENABLE_RESOURCE_CREATE
-    | ENABLE_RESOURCE_UPDATE
-    | ENABLE_RESOURCE_PARTIAL_UPDATE
-    | ENABLE_RESOURCE_DESTROY
-)
-
-
-def schema_of(serializer_class: BaseModel, model_class: Model) -> dict[str, any]:
-    return {
-        **_schema_of(serializer_class)["definitions"][serializer_class.__name__],
-        "title": model_class.__name__,
-    }
 
 
 def factory_api(
@@ -72,17 +58,7 @@ def factory_api(
     is_allowed_retrive = authorizers.get("retrive", default_authorizer)
 
     if api_doc:
-        api_doc.tags.append(
-            APITag(
-                name=Model.__name__,
-                description=getattr(Model, "__description__", "no model description defined"),
-            )
-        )
-
-        schemas = api_doc.components.get("schemas", {})
-        schemas[Model.__name__] = schema_of(InputSerializer, Model)
-
-        api_doc.components.update(schemas=schemas)
+        fill_api_doc(api_doc, Model, InputSerializer, router, enable_resource)
 
     @is_authorized(is_allowed_delete)
     def destroy(id: str) -> tuple[dict[str, any] | str, int]:
