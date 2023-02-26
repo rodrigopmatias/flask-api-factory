@@ -49,7 +49,7 @@ This way we will have a `/pets` endpoint capable of responding to all HTTP verbs
 
 ## Roadmap
 
-1. Documentation;
-1. `openapi.json` generation mechanism;
-1. A way to provide `Swagger` and/or `Redoc`;
-1. Write unit tests.
+ * [ ] Documentation;
+ * [X] `openapi.json` generation mechanism;
+ * [ ] A way to provide `Swagger` and/or `Redoc`;
+ * [ ] Write unit tests.
