@@ -18,6 +18,7 @@ class BaseModel(db.Model):
 
 
 class PetType(BaseModel):
+    __description__ = "Pet types"
     name = Column(Types.String(30), nullable=False)
 
     @property
