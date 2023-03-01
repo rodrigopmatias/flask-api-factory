@@ -9,15 +9,7 @@ from pydantic import BaseModel, schema_of
 
 from .actions import ActionBase, ActionManage
 from .auth import allow_any, factory_authorize_config
-from .constants import (
-    ENABLE_RESOURCE_ALL,
-    ENABLE_RESOURCE_CREATE,
-    ENABLE_RESOURCE_DESTROY,
-    ENABLE_RESOURCE_LIST,
-    ENABLE_RESOURCE_PARTIAL_UPDATE,
-    ENABLE_RESOURCE_RETRIVE,
-    ENABLE_RESOURCE_UPDATE,
-)
+from .constants import ResourceTypes
 from .decorators import is_authorized
 from .filter import FilterBase
 from .openapi import fill_api_doc
@@ -40,7 +32,7 @@ def factory_api(
     ordering: list[str] = ["id"],
     authorizers: dict[str, Callable[[Request], None]] = factory_authorize_config(),
     default_authorizer: Callable[[Request], None] = allow_any,
-    enable_resource: int = ENABLE_RESOURCE_ALL,
+    enable_resource: ResourceTypes = ResourceTypes.ALL,
 ) -> None:
     action_manager = ActionManage(actions)
 
@@ -203,9 +195,9 @@ def factory_api(
 
         return result, status
 
-    (enable_resource & ENABLE_RESOURCE_RETRIVE) and router.get("/<string:id>/")(retrive)
-    (enable_resource & ENABLE_RESOURCE_LIST) and router.get("/")(list_items)
-    (enable_resource & ENABLE_RESOURCE_CREATE) and router.post("/")(create)
-    (enable_resource & ENABLE_RESOURCE_UPDATE) and router.put("/<string:id>/")(update)
-    (enable_resource & ENABLE_RESOURCE_PARTIAL_UPDATE) and router.patch("/<string:id>/")(partial_update)
-    (enable_resource & ENABLE_RESOURCE_DESTROY) and router.delete("/<string:id>/")(destroy)
+    (enable_resource & ResourceTypes.RETRIVE) and router.get("/<string:id>/")(retrive)
+    (enable_resource & ResourceTypes.LIST) and router.get("/")(list_items)
+    (enable_resource & ResourceTypes.CREATE) and router.post("/")(create)
+    (enable_resource & ResourceTypes.UPDATE) and router.put("/<string:id>/")(update)
+    (enable_resource & ResourceTypes.PARTIAL_UPDATE) and router.patch("/<string:id>/")(partial_update)
+    (enable_resource & ResourceTypes.DESTROY) and router.delete("/<string:id>/")(destroy)
