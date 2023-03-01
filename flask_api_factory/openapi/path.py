@@ -3,14 +3,7 @@ from typing import Type
 from flask import Blueprint
 from flask_sqlalchemy.model import Model
 
-from flask_api_factory.constants import (
-    ENABLE_RESOURCE_CREATE,
-    ENABLE_RESOURCE_DESTROY,
-    ENABLE_RESOURCE_LIST,
-    ENABLE_RESOURCE_PARTIAL_UPDATE,
-    ENABLE_RESOURCE_RETRIVE,
-    ENABLE_RESOURCE_UPDATE,
-)
+from flask_api_factory.constants import ResourceTypes
 
 from .models import APIDoc
 
@@ -154,28 +147,26 @@ def fill_api_doc_paths(
     api_doc: APIDoc, router: Blueprint, enable_resource: int, model_class: Type[Model]
 ) -> None:
     tags = [model_class.__name__]
+    with_id_resources = (
+        ResourceTypes.RETRIVE | ResourceTypes.UPDATE | ResourceTypes.PARTIAL_UPDATE | ResourceTypes.DESTROY
+    )
 
-    if enable_resource & (ENABLE_RESOURCE_RETRIVE | ENABLE_RESOURCE_CREATE):
+    if enable_resource & (ResourceTypes.RETRIVE | ResourceTypes.CREATE):
         paths = {}
 
-        (enable_resource | ENABLE_RESOURCE_RETRIVE) and paths.update(get=_build_api_path_list(tags))
-        (enable_resource | ENABLE_RESOURCE_RETRIVE) and paths.update(post=_build_api_path_create(tags))
+        (enable_resource | ResourceTypes.RETRIVE) and paths.update(get=_build_api_path_list(tags))
+        (enable_resource | ResourceTypes.RETRIVE) and paths.update(post=_build_api_path_create(tags))
 
         api_doc.paths[f"{router.url_prefix}/"] = paths
 
-    if enable_resource & (
-        ENABLE_RESOURCE_RETRIVE
-        | ENABLE_RESOURCE_UPDATE
-        | ENABLE_RESOURCE_PARTIAL_UPDATE
-        | ENABLE_RESOURCE_DESTROY
-    ):
+    if enable_resource & with_id_resources:
         paths = {}
 
-        (enable_resource | ENABLE_RESOURCE_LIST) and paths.update(get=_build_api_path_retrive(tags))
-        (enable_resource | ENABLE_RESOURCE_UPDATE) and paths.update(put=_build_api_path_update(tags))
-        (enable_resource | ENABLE_RESOURCE_PARTIAL_UPDATE) and paths.update(
+        (enable_resource | ResourceTypes.LIST) and paths.update(get=_build_api_path_retrive(tags))
+        (enable_resource | ResourceTypes.UPDATE) and paths.update(put=_build_api_path_update(tags))
+        (enable_resource | ResourceTypes.PARTIAL_UPDATE) and paths.update(
             patch=_build_api_path_partial_update(tags)
         )
-        (enable_resource | ENABLE_RESOURCE_DESTROY) and paths.update(delete=_build_api_path_destroy(tags))
+        (enable_resource | ResourceTypes.DESTROY) and paths.update(delete=_build_api_path_destroy(tags))
 
         api_doc.paths["/".join([router.url_prefix, "{id}", ""])] = paths
