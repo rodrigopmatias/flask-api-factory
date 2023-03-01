@@ -154,19 +154,19 @@ def fill_api_doc_paths(
     if enable_resource & (ResourceTypes.RETRIVE | ResourceTypes.CREATE):
         paths = {}
 
-        (enable_resource | ResourceTypes.RETRIVE) and paths.update(get=_build_api_path_list(tags))
-        (enable_resource | ResourceTypes.RETRIVE) and paths.update(post=_build_api_path_create(tags))
+        (enable_resource & ResourceTypes.RETRIVE) and paths.update(get=_build_api_path_list(tags))
+        (enable_resource & ResourceTypes.CREATE) and paths.update(post=_build_api_path_create(tags))
 
         api_doc.paths[f"{router.url_prefix}/"] = paths
 
     if enable_resource & with_id_resources:
         paths = {}
 
-        (enable_resource | ResourceTypes.LIST) and paths.update(get=_build_api_path_retrive(tags))
-        (enable_resource | ResourceTypes.UPDATE) and paths.update(put=_build_api_path_update(tags))
-        (enable_resource | ResourceTypes.PARTIAL_UPDATE) and paths.update(
+        (enable_resource & ResourceTypes.LIST) and paths.update(get=_build_api_path_retrive(tags))
+        (enable_resource & ResourceTypes.UPDATE) and paths.update(put=_build_api_path_update(tags))
+        (enable_resource & ResourceTypes.PARTIAL_UPDATE) and paths.update(
             patch=_build_api_path_partial_update(tags)
         )
-        (enable_resource | ResourceTypes.DESTROY) and paths.update(delete=_build_api_path_destroy(tags))
+        (enable_resource & ResourceTypes.DESTROY) and paths.update(delete=_build_api_path_destroy(tags))
 
         api_doc.paths["/".join([router.url_prefix, "{id}", ""])] = paths
